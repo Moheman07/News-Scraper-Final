@@ -41,8 +41,8 @@ class NewspaperSpider(scrapy.Spider):
             # المرور على كل مقال تم العثور عليه
             for article in paper.articles:
                 # التوقف إذا وصلنا إلى 10 مقالات
-                if articles_found_count >= 10:
-                    self.logger.info("تم العثور على 10 مقالات، سيتم الانتقال إلى الموقع التالي.")
+                if articles_found_count >= 5:
+                    self.logger.info("تم العثور على 5 مقالات، سيتم الانتقال إلى الموقع التالي.")
                     break
 
                 try:
