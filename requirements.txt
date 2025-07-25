@@ -1,0 +1,5 @@
+scrapy
+scrapy-playwright
+newspaper3k
+pandas
+lxml[html_clean]

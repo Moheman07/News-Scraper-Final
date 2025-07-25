@@ -1,0 +1,38 @@
+name: Scrape News Sites
+
+on:
+  # لتشغيل السكربت تلقائيًا
+  schedule:
+    # يعمل مرة كل 24 ساعات
+    - cron: '0 */24 * * *'
+
+  # للسماح بالتشغيل اليدوي من واجهة GitHub
+  workflow_dispatch:
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run Scrapy spider
+        # تأكد من أن اسم العنكبوت هو news_aggregator
+        run: scrapy crawl news_aggregator
+
+      - name: Commit and push results
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "<>"
+          # هذا الأمر يحفظ كل ملفات JSON الجديدة أو المعدلة
+          git add *.json
+          git commit -m "Update news articles" || exit 0
+          git push
