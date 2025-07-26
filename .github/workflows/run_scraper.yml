@@ -3,8 +3,8 @@ name: Scrape News Sites
 on:
   # لتشغيل السكربت تلقائيًا
   schedule:
-    # يعمل مرة كل 24 ساعات
-    - cron: '0 */24 * * *'
+    # يعمل مرة كل 6 ساعات
+    - cron: '0 */6 * * *'
 
   # للسماح بالتشغيل اليدوي من واجهة GitHub
   workflow_dispatch:

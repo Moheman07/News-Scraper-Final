@@ -30,6 +30,7 @@ class NewspaperSpider(scrapy.Spider):
             self.logger.info(f"تم العثور على {len(paper.articles)} رابط محتمل. جارٍ التحليل...")
 
             for article in paper.articles:
+                # التوقف إذا وصلنا إلى 10 مقالات
                 if articles_found_count >= 10:
                     self.logger.info("تم العثور على 10 مقالات، سيتم الانتقال إلى الموقع التالي.")
                     break
