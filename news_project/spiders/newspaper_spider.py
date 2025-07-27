@@ -13,6 +13,9 @@ class NewspaperSpider(scrapy.Spider):
         "IG_News": "https://www.ig.com/uk/news-and-trade-ideas",
         "Kitco": "https://www.kitco.com/news/"
     }
+    
+    # ✅ الإضافة الجديدة: تحديد أقصى عدد من الروابط لفحصها في كل موقع
+    MAX_LINKS_TO_CHECK = 30
 
     def start_requests(self):
         nltk.download('punkt', quiet=True)
@@ -23,19 +26,15 @@ class NewspaperSpider(scrapy.Spider):
             file_name = f"{site_name}_articles.json"
             seen_links = set()
 
-            # الخطوة 1: قراءة الملف القديم (إذا كان موجودًا)
             if os.path.exists(file_name):
                 try:
                     old_df = pd.read_json(file_name)
                     seen_links.update(old_df['link'].tolist())
-                    self.logger.info(f"تم العثور على {len(seen_links)} رابط محفوظ سابقًا لـ {site_name}.")
-                except Exception as e:
-                    self.logger.error(f"فشل في قراءة الملف القديم {file_name}. الخطأ: {e}")
+                except Exception:
                     old_df = pd.DataFrame()
             else:
                 old_df = pd.DataFrame()
 
-            # الخطوة 2: جلب الروابط الحالية من الموقع
             try:
                 paper = newspaper.build(url, memoize_articles=False, fetch_images=False)
             except Exception as e:
@@ -43,9 +42,16 @@ class NewspaperSpider(scrapy.Spider):
                 continue
 
             new_articles = []
+            links_checked = 0 # عداد للروابط التي تم فحصها
             
-            # الخطوة 3 و 4: معالجة المقالات الجديدة فقط
+            # المرور على المقالات
             for article in paper.articles:
+                # ✅ التوقف بعد فحص 30 رابطًا لتوفير الوقت
+                if links_checked >= self.MAX_LINKS_TO_CHECK:
+                    self.logger.info(f"تم فحص أول {self.MAX_LINKS_TO_CHECK} رابطًا. سيتم التوقف.")
+                    break
+                links_checked += 1
+
                 if article.url not in seen_links:
                     try:
                         article.download()
@@ -65,14 +71,12 @@ class NewspaperSpider(scrapy.Spider):
                     except Exception:
                         pass
             
-            # الخطوة 5: تحديث الملف إذا تم العثور على مقالات جديدة
             if not new_articles:
                 self.logger.info(f"لا توجد مقالات جديدة في {site_name}.")
                 continue
 
             new_df = pd.DataFrame(new_articles)
             
-            # دمج الجديد مع القديم، وإزالة التكرار، والإبقاء على أحدث 10
             combined_df = pd.concat([new_df, old_df], ignore_index=True)
             combined_df.drop_duplicates(subset=['link'], keep='first', inplace=True)
             final_df = combined_df.head(10)
