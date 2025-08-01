@@ -10,6 +10,7 @@ class NewspaperSpider(scrapy.Spider):
 
     sites = {
         "FXStreet": "https://www.fxstreet.com/news",
+        "IG_News": "https://www.ig.com/uk/news-and-trade-ideas",
         "Kitco": "https://www.kitco.com/news/"
     }
     
