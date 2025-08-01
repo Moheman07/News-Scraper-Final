@@ -1,38 +1,43 @@
-name: Scrape News Sites
+name: Market Analysis
 
 on:
-  # لتشغيل السكربت تلقائيًا
   schedule:
-    # يعمل مرة كل 6 ساعات
-    - cron: '0 */6 * * *'
-
-  # للسماح بالتشغيل اليدوي من واجهة GitHub
-  workflow_dispatch:
+    # Runs at 08:00 UTC (11:00 AM Baghdad time)
+    - cron: '0 8 * * *'
+  workflow_dispatch: # Allows manual running
 
 jobs:
-  scrape:
+  build:
     runs-on: ubuntu-latest
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+    steps:
+      - name: Checkout Repository Code
+        uses: actions/checkout@v3
+
+      - name: Setup Python Environment
+        uses: actions/setup-python@v4
         with:
           python-version: '3.11'
 
-      - name: Install dependencies
-        run: pip install -r requirements.txt
-
-      - name: Run Scrapy spider
-        # تأكد من أن اسم العنكبوت هو news_aggregator
-        run: scrapy crawl news_aggregator
-
-      - name: Commit and push results
+      - name: Install Required Libraries
         run: |
-          git config user.name "GitHub Actions Bot"
-          git config user.email "<>"
-          # هذا الأمر يحفظ كل ملفات JSON الجديدة أو المعدلة
-          git add *.json
-          git commit -m "Update news articles" || exit 0
-          git push
+          python -m pip install --upgrade pip
+          pip install numpy==1.26.4 pandas==2.2.2 pandas-ta yfinance requests newspaper3k
+
+      - name: Run Gold Analysis Script
+        run: python gold_analyzer.py
+
+      - name: Run VIX Analysis Script
+        run: python get_vix.py
+
+      - name: Run Yields Analysis Script
+        run: python get_yields.py
+
+      - name: Run News Scraper Script
+        run: python get_news.py
+
+      - name: Save and Update Analysis Files
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "Automated analysis data update"
+          file_pattern: "*.json" # This will now commit all .json files
