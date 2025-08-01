@@ -1,8 +1,12 @@
 name: Scrape News Sites
 
 on:
+  # لتشغيل السكربت تلقائيًا
   schedule:
+    # يعمل مرة كل 6 ساعات
     - cron: '0 */6 * * *'
+
+  # للسماح بالتشغيل اليدوي من واجهة GitHub
   workflow_dispatch:
 
 jobs:
@@ -18,13 +22,17 @@ jobs:
           python-version: '3.11'
 
       - name: Install dependencies
-        run: pip install newspaper3k
+        run: pip install -r requirements.txt
 
-      - name: Run news scraper script
-        run: python get_news.py # Corrected command
+      - name: Run Scrapy spider
+        # تأكد من أن اسم العنكبوت هو news_aggregator
+        run: scrapy crawl news_aggregator
 
       - name: Commit and push results
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: "Update news articles"
-          file_pattern: "latest_news.json"
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "<>"
+          # هذا الأمر يحفظ كل ملفات JSON الجديدة أو المعدلة
+          git add *.json
+          git commit -m "Update news articles" || exit 0
+          git push
