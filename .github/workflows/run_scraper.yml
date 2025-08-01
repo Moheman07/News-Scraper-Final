@@ -1,10 +1,8 @@
 name: Scrape News Sites
 
 on:
-  # Run automatically every 6 hours
   schedule:
     - cron: '0 */6 * * *'
-  # Allow manual running
   workflow_dispatch:
 
 jobs:
@@ -19,16 +17,14 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install dependencies from requirements.txt
-        run: pip install -r requirements.txt
+      - name: Install dependencies
+        run: pip install newspaper3k
 
-      - name: Run Scrapy spider
-        # This requires your Scrapy project to be set up correctly
-        # and that the spider's name is 'news_aggregator'
-        run: scrapy crawl news_aggregator
+      - name: Run news scraper script
+        run: python get_news.py # Corrected command
 
       - name: Commit and push results
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "Update news articles"
-          file_pattern: "*.json"
+          file_pattern: "latest_news.json"
